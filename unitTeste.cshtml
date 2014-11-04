@@ -1,0 +1,1051 @@
+﻿<script src="~/Content/Scripts/ng-linq.js"></script>
+<div ng-app="main">
+    <div class="page-container" ng-controller="testeController">
+        <h1 id="qunit-header">QUnit</h1>
+        <h2 id="qunit-banner"></h2>
+        <div id="qunit-testrunner-toolbar"></div>
+        <h2 id="qunit-userAgent"></h2>
+        <ol id="qunit-tests"></ol>
+        <div id="qunit-fixture"></div>
+    </div>
+</div>
+<script type="text/javascript">
+    var injector = angular.injector(['ng']);
+
+    var init = {
+        setup: function () {
+            this.$scope = injector.get('$rootScope').$new();
+        }
+    };
+
+    var app = angular.module('main', ['ng-Linq']).controller
+    ('testeController', function ($scope, $http, $filter, $q, Linq
+        ) {
+        $scope.Users =
+        [
+            { "ID": "1", "Login": "ADM", "Name": "Administrador", "ID_Group": "1" },
+            { "ID": "2", "Login": "Taila", "Name": "Taila Rosa", "ID_Group": "2" },
+            { "ID": "3", "Login": "Vine", "Name": "Vinicius Machado", "ID_Group": "2" }
+        ];
+
+        $scope.Contacts =
+        [
+            { "ID": "1", "ID_User": "1", "ID_TypeContact": "E", "Description": "Adm@nglinq.com" },
+            { "ID": "2", "ID_User": "1", "ID_TypeContact": "C", "Description": "95214785" },
+            { "ID": "3", "ID_User": "1", "ID_TypeContact": "P", "Description": "37528546" },
+            { "ID": "4", "ID_User": "2", "ID_TypeContact": "E", "Description": "Taila@nglinq.com" },
+            { "ID": "5", "ID_User": "2", "ID_TypeContact": "C", "Description": "95444445" },
+            { "ID": "6", "ID_User": "2", "ID_TypeContact": "P", "Description": "37522222" },
+            { "ID": "7", "ID_User": "3", "ID_TypeContact": "E", "Description": "Vine@nglinq.com" },
+        ];
+
+        $scope.TypesContact =
+            [
+                { "ID": "E", "Description": "Email" },
+                { "ID": "C", "Description": "Cell Phone" },
+                { "ID": "P", "Description": "Phone" }
+            ];
+
+        $scope.Groups =
+            [
+                { "ID": "1", "Description": "Adms" },
+                { "ID": "2", "Description": "ACS" }
+            ];
+
+        $scope.Tasks =
+            [
+                { "ID": "1", "Description": "BUG client 1", "Time_Spent": 5, "ID_User": "2", "ID_TypeTask": "B", "ID_Status": "C" },
+                { "ID": "2", "Description": "BUG client 2", "Time_Spent": 7, "ID_User": "3", "ID_TypeTask": "B", "ID_Status": "C" },
+                { "ID": "3", "Description": "BUG client 3", "Time_Spent": 12, "ID_User": "2", "ID_TypeTask": "B", "ID_Status": "P" },
+                { "ID": "4", "Description": "Adjust client 1", "Time_Spent": 8, "ID_User": "3", "ID_TypeTask": "A", "ID_Status": "C" },
+                { "ID": "5", "Description": "Adjust client 2", "Time_Spent": 25, "ID_User": "2", "ID_TypeTask": "A", "ID_Status": "C" },
+                { "ID": "6", "Description": "Adjust client 1", "Time_Spent": 12, "ID_User": "3", "ID_TypeTask": "A", "ID_Status": "P" },
+                { "ID": "7", "Description": "BUG client 1", "ID_TypeTask": "B" },
+                { "ID": "8", "Description": "BUG client 1", "ID_TypeTask": "B" },
+                { "ID": "9", "Description": "Adjust client 3", "ID_TypeTask": "A" }
+
+            ];
+
+        $scope.TypeTask =
+        [
+            { "ID": "B", "Description": "Bug" },
+            { "ID": "A", "Description": "Adjust" }
+        ];
+
+        $scope.Status =
+        [
+            { "ID": "C", "Description": "Complete" },
+            { "ID": "P", "Description": "Progress" }
+        ];
+
+
+        module('Where Operators', init);
+        $scope.ResultWhere = [];
+        $q.all([
+            Linq.From($scope.Users),
+            Linq.Where("(ID_Group > 1)"), // 1
+            Linq.From($scope.TypesContact),
+            Linq.Where("(ID == C)"), // 3
+            Linq.From($scope.TypesContact),
+            Linq.Where("(ID != C)"), // 5
+            Linq.From($scope.Users),
+            Linq.Where("(ID_Group < 2)"), // 7
+            Linq.From($scope.Contacts),
+            Linq.Where("(ID_User <= 2)"), //9
+            Linq.From($scope.Contacts),
+            Linq.Where("(ID_User >= 2)"), //11
+            Linq.From($scope.Tasks),
+            Linq.Where("(ID_User == 2) && (Time_Spent > 24)"), //13
+            Linq.From($scope.Tasks),
+            Linq.Where("(ID_User != 2) && (Time_Spent < 8)"), //15
+            Linq.From($scope.Tasks),
+            Linq.Where("(Time_Spent >= 12) && (Time_Spent <= 25)"), //17
+            Linq.From($scope.Tasks),
+            Linq.Where("(ID_User != 2) || (Time_Spent > 24)"), //19
+            Linq.From($scope.Tasks),
+            Linq.Where("(ID_User == 2) || (Time_Spent < 8)"), //21
+            Linq.From($scope.Tasks),
+            Linq.Where("(Time_Spent >= 25) || (Time_Spent <= 7)"), //23
+
+        ]).then(function (data) {
+            $scope.ResultWhere.push(data[1]);
+            $scope.ResultWhere.push(data[3]);
+            $scope.ResultWhere.push(data[5]);
+            $scope.ResultWhere.push(data[7]);
+            $scope.ResultWhere.push(data[9]);
+            $scope.ResultWhere.push(data[11]);
+            $scope.ResultWhere.push(data[13]);
+            $scope.ResultWhere.push(data[15]);
+            $scope.ResultWhere.push(data[17]);
+            $scope.ResultWhere.push(data[19]);
+            $scope.ResultWhere.push(data[21]);
+            $scope.ResultWhere.push(data[23]);
+        });
+
+        var resultWhere1 =
+            [
+                { "ID": "2", "Login": "Taila", "Name": "Taila Rosa", "ID_Group": "2" },
+                { "ID": "3", "Login": "Vine", "Name": "Vinicius Machado", "ID_Group": "2" }
+            ];
+
+        var resultWhere2 =
+        [
+            { "ID": "C", "Description": "Cell Phone" }
+        ];
+
+        var resultWhere3 =
+        [
+            { "ID": "E", "Description": "Email" },
+            { "ID": "P", "Description": "Phone" }
+        ];
+
+        var resultWhere4 =
+        [
+            { "ID": "1", "Login": "ADM", "Name": "Administrador", "ID_Group": "1" }
+        ];
+
+        var resultWhere5 =
+        [
+            { "ID": "1", "ID_User": "1", "ID_TypeContact": "E", "Description": "Adm@nglinq.com" },
+            { "ID": "2", "ID_User": "1", "ID_TypeContact": "C", "Description": "95214785" },
+            { "ID": "3", "ID_User": "1", "ID_TypeContact": "P", "Description": "37528546" },
+            { "ID": "4", "ID_User": "2", "ID_TypeContact": "E", "Description": "Taila@nglinq.com" },
+            { "ID": "5", "ID_User": "2", "ID_TypeContact": "C", "Description": "95444445" },
+            { "ID": "6", "ID_User": "2", "ID_TypeContact": "P", "Description": "37522222" }
+        ];
+
+        var resultWhere6 =
+        [
+            { "ID": "4", "ID_User": "2", "ID_TypeContact": "E", "Description": "Taila@nglinq.com" },
+            { "ID": "5", "ID_User": "2", "ID_TypeContact": "C", "Description": "95444445" },
+            { "ID": "6", "ID_User": "2", "ID_TypeContact": "P", "Description": "37522222" },
+            { "ID": "7", "ID_User": "3", "ID_TypeContact": "E", "Description": "Vine@nglinq.com" },
+        ];
+
+        var resultWhere7 =
+        [
+            { "ID": "5", "Description": "Adjust client 2", "Time_Spent": 25, "ID_User": "2", "ID_TypeTask": "A", "ID_Status": "C" }
+        ]
+
+        var resultWhere8 =
+        [
+            { "ID": "2", "Description": "BUG client 2", "Time_Spent": 7, "ID_User": "3", "ID_TypeTask": "B", "ID_Status": "C" }
+        ];
+
+        var resultWhere9 =
+            [
+                { "ID": "3", "Description": "BUG client 3", "Time_Spent": 12, "ID_User": "2", "ID_TypeTask": "B", "ID_Status": "P" },
+                { "ID": "5", "Description": "Adjust client 2", "Time_Spent": 25, "ID_User": "2", "ID_TypeTask": "A", "ID_Status": "C" },
+                { "ID": "6", "Description": "Adjust client 1", "Time_Spent": 12, "ID_User": "3", "ID_TypeTask": "A", "ID_Status": "P" }
+            ];
+
+        var resultWhere10 =
+        [
+            { "ID": "2", "Description": "BUG client 2", "Time_Spent": 7, "ID_User": "3", "ID_TypeTask": "B", "ID_Status": "C" },
+            { "ID": "4", "Description": "Adjust client 1", "Time_Spent": 8, "ID_User": "3", "ID_TypeTask": "A", "ID_Status": "C" },
+            { "ID": "6", "Description": "Adjust client 1", "Time_Spent": 12, "ID_User": "3", "ID_TypeTask": "A", "ID_Status": "P" },
+            { "ID": "7", "Description": "BUG client 1", "ID_TypeTask": "B" },
+            { "ID": "8", "Description": "BUG client 1", "ID_TypeTask": "B" },
+            { "ID": "9", "Description": "Adjust client 3", "ID_TypeTask": "A" },
+            { "ID": "5", "Description": "Adjust client 2", "Time_Spent": 25, "ID_User": "2", "ID_TypeTask": "A", "ID_Status": "C" }
+
+        ];
+
+        var resultWhere11 =
+        [
+            { "ID": "1", "Description": "BUG client 1", "Time_Spent": 5, "ID_User": "2", "ID_TypeTask": "B", "ID_Status": "C" },
+            { "ID": "3", "Description": "BUG client 3", "Time_Spent": 12, "ID_User": "2", "ID_TypeTask": "B", "ID_Status": "P" },
+            { "ID": "5", "Description": "Adjust client 2", "Time_Spent": 25, "ID_User": "2", "ID_TypeTask": "A", "ID_Status": "C" },
+            { "ID": "2", "Description": "BUG client 2", "Time_Spent": 7, "ID_User": "3", "ID_TypeTask": "B", "ID_Status": "C" }
+        ];
+
+        var resultWhere12 =
+            [
+                { "ID": "5", "Description": "Adjust client 2", "Time_Spent": 25, "ID_User": "2", "ID_TypeTask": "A", "ID_Status": "C" },
+                { "ID": "1", "Description": "BUG client 1", "Time_Spent": 5, "ID_User": "2", "ID_TypeTask": "B", "ID_Status": "C" },
+                { "ID": "2", "Description": "BUG client 2", "Time_Spent": 7, "ID_User": "3", "ID_TypeTask": "B", "ID_Status": "C" }
+            ];
+
+
+        QUnit.test('Where', function () {
+            deepEqual($scope.ResultWhere[0], resultWhere1, "Where Users ( > )");
+            deepEqual($scope.ResultWhere[1], resultWhere2, "Where TypesContact ( == )");
+            deepEqual($scope.ResultWhere[2], resultWhere3, "Where TypesContact ( != )");
+            deepEqual($scope.ResultWhere[3], resultWhere4, "Where Users ( < )");
+            deepEqual($scope.ResultWhere[4], resultWhere5, "Where Contacts ( <= )");
+            deepEqual($scope.ResultWhere[5], resultWhere6, "Where Contacts ( >= )");
+            deepEqual($scope.ResultWhere[6], resultWhere7, "Where Tasks ( == && > )");
+            deepEqual($scope.ResultWhere[7], resultWhere8, "Where Tasks ( != && < )");
+            deepEqual($scope.ResultWhere[8], resultWhere9, "Where Tasks ( => && <= )");
+            deepEqual($scope.ResultWhere[9], resultWhere10, "Where Tasks ( != || > )");
+            deepEqual($scope.ResultWhere[10], resultWhere11, "Where Tasks ( == || < )");
+            deepEqual($scope.ResultWhere[11], resultWhere12, "Where Tasks ( => || <= )");
+        });
+
+        module('Join Operators', init);
+        $scope.ResultJoin = [];
+        $q.all([
+            Linq.From($scope.Users),
+            Linq.Join($scope.Contacts, "(Contacts.ID_User == Users.ID)"),
+            Linq.From($scope.Contacts),
+            Linq.Join($scope.TypesContact, "(TypesContact.ID == Contacts.ID_TypeContact)"),
+            Linq.From($scope.Users),
+            Linq.Join($scope.Groups, "(Groups.ID == Users.ID_Group)"),
+            Linq.From($scope.Tasks),
+            Linq.Join($scope.TypeTask, "(TypeTask.ID == Tasks.ID_TypeTask)"),
+            Linq.Join($scope.Status, "(Status.ID == Tasks.Tasks.ID_Status)"),
+        ]).then(function (data) {
+            $scope.ResultJoin.push(data[1]);
+            $scope.ResultJoin.push(data[3]);
+            $scope.ResultJoin.push(data[5]);
+            $scope.ResultJoin.push(data[7]);
+            $scope.ResultJoin.push(data[8]);
+        });
+
+        var resultJoin1 =
+            [
+                { "Users.ID": "1", "Users.Login": "ADM", "Users.Name": "Administrador", "Users.ID_Group": "1", "Contacts.ID": "1", "Contacts.ID_User": "1", "Contacts.ID_TypeContact": "E", "Contacts.Description": "Adm@nglinq.com" },
+                { "Users.ID": "1", "Users.Login": "ADM", "Users.Name": "Administrador", "Users.ID_Group": "1", "Contacts.ID": "2", "Contacts.ID_User": "1", "Contacts.ID_TypeContact": "C", "Contacts.Description": "95214785" },
+                { "Users.ID": "1", "Users.Login": "ADM", "Users.Name": "Administrador", "Users.ID_Group": "1", "Contacts.ID": "3", "Contacts.ID_User": "1", "Contacts.ID_TypeContact": "P", "Contacts.Description": "37528546" },
+                { "Users.ID": "2", "Users.Login": "Taila", "Users.Name": "Taila Rosa", "Users.ID_Group": "2", "Contacts.ID": "4", "Contacts.ID_User": "2", "Contacts.ID_TypeContact": "E", "Contacts.Description": "Taila@nglinq.com" },
+                { "Users.ID": "2", "Users.Login": "Taila", "Users.Name": "Taila Rosa", "Users.ID_Group": "2", "Contacts.ID": "5", "Contacts.ID_User": "2", "Contacts.ID_TypeContact": "C", "Contacts.Description": "95444445" },
+                { "Users.ID": "2", "Users.Login": "Taila", "Users.Name": "Taila Rosa", "Users.ID_Group": "2", "Contacts.ID": "6", "Contacts.ID_User": "2", "Contacts.ID_TypeContact": "P", "Contacts.Description": "37522222" },
+                { "Users.ID": "3", "Users.Login": "Vine", "Users.Name": "Vinicius Machado", "Users.ID_Group": "2", "Contacts.ID": "7", "Contacts.ID_User": "3", "Contacts.ID_TypeContact": "E", "Contacts.Description": "Vine@nglinq.com" },
+            ];
+
+        var resultJoin2 =
+        [
+            { "Contacts.ID": "1", "Contacts.ID_User": "1", "Contacts.ID_TypeContact": "E", "Contacts.Description": "Adm@nglinq.com", "TypesContact.ID": "E", "TypesContact.Description": "Email" },
+            { "Contacts.ID": "2", "Contacts.ID_User": "1", "Contacts.ID_TypeContact": "C", "Contacts.Description": "95214785", "TypesContact.ID": "C", "TypesContact.Description": "Cell Phone" },
+            { "Contacts.ID": "3", "Contacts.ID_User": "1", "Contacts.ID_TypeContact": "P", "Contacts.Description": "37528546", "TypesContact.ID": "P", "TypesContact.Description": "Phone" },
+            { "Contacts.ID": "4", "Contacts.ID_User": "2", "Contacts.ID_TypeContact": "E", "Contacts.Description": "Taila@nglinq.com", "TypesContact.ID": "E", "TypesContact.Description": "Email" },
+            { "Contacts.ID": "5", "Contacts.ID_User": "2", "Contacts.ID_TypeContact": "C", "Contacts.Description": "95444445", "TypesContact.ID": "C", "TypesContact.Description": "Cell Phone" },
+            { "Contacts.ID": "6", "Contacts.ID_User": "2", "Contacts.ID_TypeContact": "P", "Contacts.Description": "37522222", "TypesContact.ID": "P", "TypesContact.Description": "Phone" },
+            { "Contacts.ID": "7", "Contacts.ID_User": "3", "Contacts.ID_TypeContact": "E", "Contacts.Description": "Vine@nglinq.com", "TypesContact.ID": "E", "TypesContact.Description": "Email" },
+        ];
+
+        var resultJoin3 =
+        [
+            { "Users.ID": "1", "Users.Login": "ADM", "Users.Name": "Administrador", "Users.ID_Group": "1", "Groups.ID": "1", "Groups.Description": "Adms" },
+            { "Users.ID": "2", "Users.Login": "Taila", "Users.Name": "Taila Rosa", "Users.ID_Group": "2", "Groups.ID": "2", "Groups.Description": "ACS" },
+            { "Users.ID": "3", "Users.Login": "Vine", "Users.Name": "Vinicius Machado", "Users.ID_Group": "2", "Groups.ID": "2", "Groups.Description": "ACS" }
+        ]
+
+        var resultJoin4 =
+            [
+                { "Tasks.ID": "1", "Tasks.Description": "BUG client 1", "Tasks.Time_Spent": 5, "Tasks.ID_User": "2", "Tasks.ID_TypeTask": "B", "Tasks.ID_Status": "C", "TypeTask.ID": "B", "TypeTask.Description": "Bug" },
+                { "Tasks.ID": "2", "Tasks.Description": "BUG client 2", "Tasks.Time_Spent": 7, "Tasks.ID_User": "3", "Tasks.ID_TypeTask": "B", "Tasks.ID_Status": "C", "TypeTask.ID": "B", "TypeTask.Description": "Bug" },
+                { "Tasks.ID": "3", "Tasks.Description": "BUG client 3", "Tasks.Time_Spent": 12, "Tasks.ID_User": "2", "Tasks.ID_TypeTask": "B", "Tasks.ID_Status": "P", "TypeTask.ID": "B", "TypeTask.Description": "Bug" },
+                { "Tasks.ID": "4", "Tasks.Description": "Adjust client 1", "Tasks.Time_Spent": 8, "Tasks.ID_User": "3", "Tasks.ID_TypeTask": "A", "Tasks.ID_Status": "C", "TypeTask.ID": "A", "TypeTask.Description": "Adjust" },
+                { "Tasks.ID": "5", "Tasks.Description": "Adjust client 2", "Tasks.Time_Spent": 25, "Tasks.ID_User": "2", "Tasks.ID_TypeTask": "A", "Tasks.ID_Status": "C", "TypeTask.ID": "A", "TypeTask.Description": "Adjust" },
+                { "Tasks.ID": "6", "Tasks.Description": "Adjust client 1", "Tasks.Time_Spent": 12, "Tasks.ID_User": "3", "Tasks.ID_TypeTask": "A", "Tasks.ID_Status": "P", "TypeTask.ID": "A", "TypeTask.Description": "Adjust" },
+                { "Tasks.ID": "7", "Tasks.Description": "BUG client 1", "Tasks.ID_TypeTask": "B", "TypeTask.ID": "B", "TypeTask.Description": "Bug" },
+                { "Tasks.ID": "8", "Tasks.Description": "BUG client 1", "Tasks.ID_TypeTask": "B", "TypeTask.ID": "B", "TypeTask.Description": "Bug" },
+                { "Tasks.ID": "9", "Tasks.Description": "Adjust client 3", "Tasks.ID_TypeTask": "A", "TypeTask.ID": "A", "TypeTask.Description": "Adjust" }
+            ]
+        var resultJoin5 =
+        [
+            { "Tasks.ID": "1", "Tasks.Description": "BUG client 1", "Tasks.Time_Spent": 5, "Tasks.ID_User": "2", "Tasks.ID_TypeTask": "B", "Tasks.ID_Status": "C", "TypeTask.ID": "B", "TypeTask.Description": "Bug", "Status.ID": "C", "Status.Description": "Complete" },
+            { "Tasks.ID": "2", "Tasks.Description": "BUG client 2", "Tasks.Time_Spent": 7, "Tasks.ID_User": "3", "Tasks.ID_TypeTask": "B", "Tasks.ID_Status": "C", "TypeTask.ID": "B", "TypeTask.Description": "Bug", "Status.ID": "C", "Status.Description": "Complete" },
+            { "Tasks.ID": "3", "Tasks.Description": "BUG client 3", "Tasks.Time_Spent": 12, "Tasks.ID_User": "2", "Tasks.ID_TypeTask": "B", "Tasks.ID_Status": "P", "TypeTask.ID": "B", "TypeTask.Description": "Bug", "Status.ID": "P", "Status.Description": "Progress" },
+            { "Tasks.ID": "4", "Tasks.Description": "Adjust client 1", "Tasks.Time_Spent": 8, "Tasks.ID_User": "3", "Tasks.ID_TypeTask": "A", "Tasks.ID_Status": "C", "TypeTask.ID": "A", "TypeTask.Description": "Adjust", "Status.ID": "C", "Status.Description": "Complete" },
+            { "Tasks.ID": "5", "Tasks.Description": "Adjust client 2", "Tasks.Time_Spent": 25, "Tasks.ID_User": "2", "Tasks.ID_TypeTask": "A", "Tasks.ID_Status": "C", "TypeTask.ID": "A", "TypeTask.Description": "Adjust", "Status.ID": "C", "Status.Description": "Complete" },
+            { "Tasks.ID": "6", "Tasks.Description": "Adjust client 1", "Tasks.Time_Spent": 12, "Tasks.ID_User": "3", "Tasks.ID_TypeTask": "A", "Tasks.ID_Status": "P", "TypeTask.ID": "A", "TypeTask.Description": "Adjust", "Status.ID": "P", "Status.Description": "Progress" }
+        ]
+
+        QUnit.test('Join', function () {
+            deepEqual($scope.ResultJoin[0], resultJoin1, "Join Users,Contacts");
+            deepEqual($scope.ResultJoin[1], resultJoin2, "Join Contacts,TypesContacts");
+            deepEqual($scope.ResultJoin[2], resultJoin3, "Join Users,Grups");
+            deepEqual($scope.ResultJoin[3], resultJoin4, "Join Tasks,TypeTask");
+            deepEqual($scope.ResultJoin[4], resultJoin5, "Join Tasks,TypeTask,Status");
+        });
+
+        $scope.ResultLeftJoin = [];
+        $q.all([
+            Linq.From($scope.Tasks),
+            Linq.LeftJoin($scope.TypeTask, "(TypeTask.ID == Tasks.ID_TypeTask)"),
+            Linq.LeftJoin($scope.Status, "(Status.ID == Tasks.Tasks.ID_Status)"),
+        ]).then(function (data) {
+            $scope.ResultLeftJoin.push(data[1]);
+            $scope.ResultLeftJoin.push(data[2]);
+        });
+
+        var resultLeftJoin1 =
+        [
+            { "Tasks.ID": "1", "Tasks.Description": "BUG client 1", "Tasks.Time_Spent": 5, "Tasks.ID_User": "2", "Tasks.ID_TypeTask": "B", "Tasks.ID_Status": "C", "TypeTask.ID": "B", "TypeTask.Description": "Bug" },
+            { "Tasks.ID": "2", "Tasks.Description": "BUG client 2", "Tasks.Time_Spent": 7, "Tasks.ID_User": "3", "Tasks.ID_TypeTask": "B", "Tasks.ID_Status": "C", "TypeTask.ID": "B", "TypeTask.Description": "Bug" },
+            { "Tasks.ID": "3", "Tasks.Description": "BUG client 3", "Tasks.Time_Spent": 12, "Tasks.ID_User": "2", "Tasks.ID_TypeTask": "B", "Tasks.ID_Status": "P", "TypeTask.ID": "B", "TypeTask.Description": "Bug" },
+            { "Tasks.ID": "4", "Tasks.Description": "Adjust client 1", "Tasks.Time_Spent": 8, "Tasks.ID_User": "3", "Tasks.ID_TypeTask": "A", "Tasks.ID_Status": "C", "TypeTask.ID": "A", "TypeTask.Description": "Adjust" },
+            { "Tasks.ID": "5", "Tasks.Description": "Adjust client 2", "Tasks.Time_Spent": 25, "Tasks.ID_User": "2", "Tasks.ID_TypeTask": "A", "Tasks.ID_Status": "C", "TypeTask.ID": "A", "TypeTask.Description": "Adjust" },
+            { "Tasks.ID": "6", "Tasks.Description": "Adjust client 1", "Tasks.Time_Spent": 12, "Tasks.ID_User": "3", "Tasks.ID_TypeTask": "A", "Tasks.ID_Status": "P", "TypeTask.ID": "A", "TypeTask.Description": "Adjust" },
+            { "Tasks.ID": "7", "Tasks.Description": "BUG client 1", "Tasks.ID_TypeTask": "B", "TypeTask.ID": "B", "TypeTask.Description": "Bug" },
+            { "Tasks.ID": "8", "Tasks.Description": "BUG client 1", "Tasks.ID_TypeTask": "B", "TypeTask.ID": "B", "TypeTask.Description": "Bug" },
+            { "Tasks.ID": "9", "Tasks.Description": "Adjust client 3", "Tasks.ID_TypeTask": "A", "TypeTask.ID": "A", "TypeTask.Description": "Adjust" }
+        ]
+        var resultLeftJoin2 =
+        [
+            { "Tasks.ID": "1", "Tasks.Description": "BUG client 1", "Tasks.Time_Spent": 5, "Tasks.ID_User": "2", "Tasks.ID_TypeTask": "B", "Tasks.ID_Status": "C", "TypeTask.ID": "B", "TypeTask.Description": "Bug", "Status.ID": "C", "Status.Description": "Complete" },
+            { "Tasks.ID": "2", "Tasks.Description": "BUG client 2", "Tasks.Time_Spent": 7, "Tasks.ID_User": "3", "Tasks.ID_TypeTask": "B", "Tasks.ID_Status": "C", "TypeTask.ID": "B", "TypeTask.Description": "Bug", "Status.ID": "C", "Status.Description": "Complete" },
+            { "Tasks.ID": "3", "Tasks.Description": "BUG client 3", "Tasks.Time_Spent": 12, "Tasks.ID_User": "2", "Tasks.ID_TypeTask": "B", "Tasks.ID_Status": "P", "TypeTask.ID": "B", "TypeTask.Description": "Bug", "Status.ID": "P", "Status.Description": "Progress" },
+            { "Tasks.ID": "4", "Tasks.Description": "Adjust client 1", "Tasks.Time_Spent": 8, "Tasks.ID_User": "3", "Tasks.ID_TypeTask": "A", "Tasks.ID_Status": "C", "TypeTask.ID": "A", "TypeTask.Description": "Adjust", "Status.ID": "C", "Status.Description": "Complete" },
+            { "Tasks.ID": "5", "Tasks.Description": "Adjust client 2", "Tasks.Time_Spent": 25, "Tasks.ID_User": "2", "Tasks.ID_TypeTask": "A", "Tasks.ID_Status": "C", "TypeTask.ID": "A", "TypeTask.Description": "Adjust", "Status.ID": "C", "Status.Description": "Complete" },
+            { "Tasks.ID": "6", "Tasks.Description": "Adjust client 1", "Tasks.Time_Spent": 12, "Tasks.ID_User": "3", "Tasks.ID_TypeTask": "A", "Tasks.ID_Status": "P", "TypeTask.ID": "A", "TypeTask.Description": "Adjust", "Status.ID": "P", "Status.Description": "Progress" },
+            { "Tasks.ID": "7", "Tasks.Description": "BUG client 1", "Tasks.ID_TypeTask": "B", "TypeTask.ID": "B", "TypeTask.Description": "Bug" },
+            { "Tasks.ID": "8", "Tasks.Description": "BUG client 1", "Tasks.ID_TypeTask": "B", "TypeTask.ID": "B", "TypeTask.Description": "Bug" },
+            { "Tasks.ID": "9", "Tasks.Description": "Adjust client 3", "Tasks.ID_TypeTask": "A", "TypeTask.ID": "A", "TypeTask.Description": "Adjust" }
+        ]
+
+        QUnit.test('Left Join', function () {
+            deepEqual($scope.ResultLeftJoin[0], resultLeftJoin1, "LeftJoin Tasks,TypeTask");
+            deepEqual($scope.ResultLeftJoin[1], resultLeftJoin2, "LeftJoin Tasks,TypeTask,Status");
+        });
+
+        module('Projection Operators', init);
+        $scope.ResultSelect = [];
+        $q.all([
+            Linq.From($scope.Users),
+            Linq.Select("Name,Login"),
+            Linq.From($scope.Contacts),
+            Linq.Select("Description, ID_TypeContact AS TypeContact"),
+            Linq.From($scope.TypesContact),
+            Linq.Select("Description as Descrip"),
+            Linq.From($scope.Groups),
+            Linq.Select("Description AS Descrip"),
+            Linq.From($scope.Tasks),
+            Linq.Select("Description,Time_Spent as TIME,ID_Status AS Status")
+        ]).then(function (data) {
+            $scope.ResultSelect.push(data[1]);
+            $scope.ResultSelect.push(data[3]);
+            $scope.ResultSelect.push(data[5]);
+            $scope.ResultSelect.push(data[7]);
+            $scope.ResultSelect.push(data[9]);
+        });
+
+        var resultSelect1 =
+        [
+            { "Name": "Administrador", "Login": "ADM" },
+            { "Name": "Taila Rosa", "Login": "Taila" },
+            { "Name": "Vinicius Machado", "Login": "Vine" }
+        ];
+
+        var resultSelect2 =
+        [
+            { "Description": "Adm@nglinq.com", "TypeContact": "E" },
+            { "Description": "95214785", "TypeContact": "C" },
+            { "Description": "37528546", "TypeContact": "P" },
+            { "Description": "Taila@nglinq.com", "TypeContact": "E" },
+            { "Description": "95444445", "TypeContact": "C" },
+            { "Description": "37522222", "TypeContact": "P" },
+            { "Description": "Vine@nglinq.com", "TypeContact": "E" },
+        ];
+
+        var resultSelect3 =
+            [
+                { "Descrip": "Email" },
+                { "Descrip": "Cell Phone" },
+                { "Descrip": "Phone" }
+            ];
+
+        var resultSelect4 =
+            [
+                { "Descrip": "Adms" },
+                { "Descrip": "ACS" }
+            ];
+
+        var resultSelect5 =
+            [
+                { "Description": "BUG client 1", "TIME": 5, "Status": "C" },
+                { "Description": "BUG client 2", "TIME": 7, "Status": "C" },
+                { "Description": "BUG client 3", "TIME": 12, "Status": "P" },
+                { "Description": "Adjust client 1", "TIME": 8, "Status": "C" },
+                { "Description": "Adjust client 2", "TIME": 25, "Status": "C" },
+                { "Description": "Adjust client 1", "TIME": 12, "Status": "P" },
+                { "Description": "BUG client 1", "Status": undefined, "TIME": undefined },
+                { "Description": "BUG client 1", "Status": undefined, "TIME": undefined },
+                { "Description": "Adjust client 3", "Status": undefined, "TIME": undefined }
+
+            ];
+
+        QUnit.test('Select', function () {
+            deepEqual($scope.ResultSelect[0], resultSelect1, "Select(Name,Login) Users");
+            deepEqual($scope.ResultSelect[1], resultSelect2, "Select(Description,TypeContact)");
+            deepEqual($scope.ResultSelect[2], resultSelect3, "Select(Descrip)");
+            deepEqual($scope.ResultSelect[3], resultSelect4, "Select(Descrip)");
+            deepEqual($scope.ResultSelect[4], resultSelect5, "Select(Description,TIME,Status)");
+        });
+
+        module('Ordering Operators', init);
+
+        $scope.ResultOrderBy = [];
+        $q.all([
+            Linq.From($scope.Users),
+            Linq.OrderBy("Name"),
+            Linq.From($scope.Contacts),
+            Linq.OrderBy("Description"),
+            Linq.From($scope.TypesContact),
+            Linq.OrderBy("Description"),
+            Linq.From($scope.Groups),
+            Linq.OrderBy("Description"),
+            Linq.From($scope.Tasks),
+            Linq.OrderBy("Description")
+        ]).then(function (data) {
+            $scope.ResultOrderBy.push(data[1]);
+            $scope.ResultOrderBy.push(data[3]);
+            $scope.ResultOrderBy.push(data[5]);
+            $scope.ResultOrderBy.push(data[7]);
+            $scope.ResultOrderBy.push(data[9]);
+        });
+
+        var resultOrder1 =
+        [
+            { "ID": "1", "Login": "ADM", "Name": "Administrador", "ID_Group": "1" },
+            { "ID": "2", "Login": "Taila", "Name": "Taila Rosa", "ID_Group": "2" },
+            { "ID": "3", "Login": "Vine", "Name": "Vinicius Machado", "ID_Group": "2" }
+        ];
+
+        var resultOrder2 =
+        [
+            { "ID": "6", "ID_User": "2", "ID_TypeContact": "P", "Description": "37522222" },
+            { "ID": "3", "ID_User": "1", "ID_TypeContact": "P", "Description": "37528546" },
+            { "ID": "2", "ID_User": "1", "ID_TypeContact": "C", "Description": "95214785" },
+            { "ID": "5", "ID_User": "2", "ID_TypeContact": "C", "Description": "95444445" },
+            { "ID": "1", "ID_User": "1", "ID_TypeContact": "E", "Description": "Adm@nglinq.com" },
+            { "ID": "4", "ID_User": "2", "ID_TypeContact": "E", "Description": "Taila@nglinq.com" },
+            { "ID": "7", "ID_User": "3", "ID_TypeContact": "E", "Description": "Vine@nglinq.com" }
+        ];
+        var resultOrder3 =
+            [
+                { "ID": "C", "Description": "Cell Phone" },
+                { "ID": "E", "Description": "Email" },
+                { "ID": "P", "Description": "Phone" }
+            ];
+        var resultOrder4 =
+            [
+                { "ID": "2", "Description": "ACS" },
+                { "ID": "1", "Description": "Adms" }
+
+            ];
+        var resultOrder5 =
+            [
+                { "ID": "4", "Description": "Adjust client 1", "Time_Spent": 8, "ID_User": "3", "ID_TypeTask": "A", "ID_Status": "C" },
+                { "ID": "6", "Description": "Adjust client 1", "Time_Spent": 12, "ID_User": "3", "ID_TypeTask": "A", "ID_Status": "P" },
+                { "ID": "5", "Description": "Adjust client 2", "Time_Spent": 25, "ID_User": "2", "ID_TypeTask": "A", "ID_Status": "C" },
+                { "ID": "9", "Description": "Adjust client 3", "ID_TypeTask": "A" },
+                { "ID": "1", "Description": "BUG client 1", "Time_Spent": 5, "ID_User": "2", "ID_TypeTask": "B", "ID_Status": "C" },
+                { "ID": "7", "Description": "BUG client 1", "ID_TypeTask": "B" },
+                { "ID": "8", "Description": "BUG client 1", "ID_TypeTask": "B" },
+                { "ID": "2", "Description": "BUG client 2", "Time_Spent": 7, "ID_User": "3", "ID_TypeTask": "B", "ID_Status": "C" },
+                { "ID": "3", "Description": "BUG client 3", "Time_Spent": 12, "ID_User": "2", "ID_TypeTask": "B", "ID_Status": "P" },
+
+            ];
+
+
+        QUnit.test('OrderBy', function () {
+            deepEqual($scope.ResultOrderBy[0], resultOrder1, "OrderBy(Name) Users - return ID(1,2,3)");
+            deepEqual($scope.ResultOrderBy[1], resultOrder2, "OrderBy(Description) Contacts - return ID(6,3,2,5,1,4,7)");
+            deepEqual($scope.ResultOrderBy[2], resultOrder3, "OrderBy(Description) TypeContact - return ID(C,E,P)");
+            deepEqual($scope.ResultOrderBy[3], resultOrder4, "OrderBy(Description) Groups - return ID(2,1)");
+            deepEqual($scope.ResultOrderBy[4], resultOrder5, "OrderBy(Description) Tasks - return ID(4,6,5,9,7,8,1,2,3)");
+        });
+
+
+        $scope.ResultOrderByDesc = [];
+        $q.all([
+            Linq.From($scope.Users),
+            Linq.OrderByDesc("Name"),
+            Linq.From($scope.Contacts),
+            Linq.OrderByDesc("Description"),
+            Linq.From($scope.TypesContact),
+            Linq.OrderByDesc("Description"),
+            Linq.From($scope.Groups),
+            Linq.OrderByDesc("Description"),
+            Linq.From($scope.Tasks),
+            Linq.OrderByDesc("Description")
+        ]).then(function (data) {
+            $scope.ResultOrderByDesc.push(data[1]);
+            $scope.ResultOrderByDesc.push(data[3]);
+            $scope.ResultOrderByDesc.push(data[5]);
+            $scope.ResultOrderByDesc.push(data[7]);
+            $scope.ResultOrderByDesc.push(data[9]);
+        });
+
+        var resultOrderDesc1 =
+        [
+            { "ID": "3", "Login": "Vine", "Name": "Vinicius Machado", "ID_Group": "2" },
+            { "ID": "2", "Login": "Taila", "Name": "Taila Rosa", "ID_Group": "2" },
+            { "ID": "1", "Login": "ADM", "Name": "Administrador", "ID_Group": "1" }
+        ];
+
+        var resultOrderDesc2 =
+        [
+            { "ID": "7", "ID_User": "3", "ID_TypeContact": "E", "Description": "Vine@nglinq.com" },
+            { "ID": "4", "ID_User": "2", "ID_TypeContact": "E", "Description": "Taila@nglinq.com" },
+            { "ID": "1", "ID_User": "1", "ID_TypeContact": "E", "Description": "Adm@nglinq.com" },
+            { "ID": "5", "ID_User": "2", "ID_TypeContact": "C", "Description": "95444445" },
+            { "ID": "2", "ID_User": "1", "ID_TypeContact": "C", "Description": "95214785" },
+            { "ID": "3", "ID_User": "1", "ID_TypeContact": "P", "Description": "37528546" },
+            { "ID": "6", "ID_User": "2", "ID_TypeContact": "P", "Description": "37522222" }
+        ];
+
+        var resultOrderDesc3 =
+            [
+                { "ID": "P", "Description": "Phone" },
+                { "ID": "E", "Description": "Email" },
+                { "ID": "C", "Description": "Cell Phone" }
+            ];
+
+        var resultOrderDesc4 =
+            [
+                { "ID": "1", "Description": "Adms" },
+                { "ID": "2", "Description": "ACS" }
+            ];
+
+        var resultOrderDesc5 =
+        [
+            { "ID": "3", "Description": "BUG client 3", "Time_Spent": 12, "ID_User": "2", "ID_TypeTask": "B", "ID_Status": "P" },
+            { "ID": "2", "Description": "BUG client 2", "Time_Spent": 7, "ID_User": "3", "ID_TypeTask": "B", "ID_Status": "C" },
+            { "ID": "1", "Description": "BUG client 1", "Time_Spent": 5, "ID_User": "2", "ID_TypeTask": "B", "ID_Status": "C" },
+            { "ID": "7", "Description": "BUG client 1", "ID_TypeTask": "B" },
+            { "ID": "8", "Description": "BUG client 1", "ID_TypeTask": "B" },
+            { "ID": "9", "Description": "Adjust client 3", "ID_TypeTask": "A" },
+            { "ID": "5", "Description": "Adjust client 2", "Time_Spent": 25, "ID_User": "2", "ID_TypeTask": "A", "ID_Status": "C" },
+            { "ID": "4", "Description": "Adjust client 1", "Time_Spent": 8, "ID_User": "3", "ID_TypeTask": "A", "ID_Status": "C" },
+            { "ID": "6", "Description": "Adjust client 1", "Time_Spent": 12, "ID_User": "3", "ID_TypeTask": "A", "ID_Status": "P" }
+        ];
+
+        QUnit.test('OrderByDesc', function () {
+            deepEqual($scope.ResultOrderByDesc[0], resultOrderDesc1, "OrderBy(Name) Users - return ID(3,2,1)");
+            deepEqual($scope.ResultOrderByDesc[1], resultOrderDesc2, "OrderBy(Description) Contacts - return ID(7,4,1,5,2,3,6)");
+            deepEqual($scope.ResultOrderByDesc[2], resultOrderDesc3, "OrderBy(Description) TypeContact - return ID(P,E,C)");
+            deepEqual($scope.ResultOrderByDesc[3], resultOrderDesc4, "OrderBy(Description) Groups - return ID(1,2)");
+            deepEqual($scope.ResultOrderByDesc[4], resultOrderDesc5, "OrderBy(Description) Tasks - return ID(3,2,1,7,8,9,5,4,6)");
+        });
+
+        module('Partitioning Operators', init);
+
+        $scope.ResultTake = [];
+
+        $q.all([
+               Linq.From($scope.Users),
+               Linq.Take(2),
+               Linq.From($scope.Contacts),
+               Linq.Take(5),
+               Linq.From($scope.TypesContact),
+               Linq.Take(1),
+               Linq.From($scope.Groups),
+               Linq.Take(5),
+               Linq.From($scope.Tasks),
+               Linq.Take(3)
+        ]).then(function (data) {
+            $scope.ResultTake.push(data[1]);
+            $scope.ResultTake.push(data[3]);
+            $scope.ResultTake.push(data[5]);
+            $scope.ResultTake.push(data[7]);
+            $scope.ResultTake.push(data[9]);
+        });
+
+        var result1 =
+        [
+            { "ID": "1", "Login": "ADM", "Name": "Administrador", "ID_Group": "1" },
+            { "ID": "2", "Login": "Taila", "Name": "Taila Rosa", "ID_Group": "2" }
+        ]
+
+        var result2 =
+            [
+                { "ID": "1", "ID_User": "1", "ID_TypeContact": "E", "Description": "Adm@nglinq.com" },
+                { "ID": "2", "ID_User": "1", "ID_TypeContact": "C", "Description": "95214785" },
+                { "ID": "3", "ID_User": "1", "ID_TypeContact": "P", "Description": "37528546" },
+                { "ID": "4", "ID_User": "2", "ID_TypeContact": "E", "Description": "Taila@nglinq.com" },
+                { "ID": "5", "ID_User": "2", "ID_TypeContact": "C", "Description": "95444445" }
+            ];
+        var result3 =
+            [
+                { "ID": "E", "Description": "Email" }
+            ];
+        var result4 =
+            [
+                { "ID": "1", "Description": "Adms" },
+                { "ID": "2", "Description": "ACS" }
+
+            ];
+        var result5 =
+            [
+                { "ID": "1", "Description": "BUG client 1", "Time_Spent": 5, "ID_User": "2", "ID_TypeTask": "B", "ID_Status": "C" },
+                { "ID": "2", "Description": "BUG client 2", "Time_Spent": 7, "ID_User": "3", "ID_TypeTask": "B", "ID_Status": "C" },
+                { "ID": "3", "Description": "BUG client 3", "Time_Spent": 12, "ID_User": "2", "ID_TypeTask": "B", "ID_Status": "P" }
+            ];
+
+        QUnit.test('Take', function () {
+            deepEqual($scope.ResultTake[0], result1, "Take(2) Users - return ID(1,2)");
+            deepEqual($scope.ResultTake[1], result2, "Take(5) Contacts - return ID(1,2,3,4,5)");
+            deepEqual($scope.ResultTake[2], result3, "Take(1) TypeContact - return ID(1)");
+            deepEqual($scope.ResultTake[3], result4, "Take(5) Groups - return ID(1,2)");
+            deepEqual($scope.ResultTake[4], result5, "Take(3) Tasks - return ID(1,2,3)");
+        });
+
+
+        $scope.ResultSkip = [];
+
+        $q.all([
+               Linq.From($scope.Users),
+               Linq.Skip(1),
+               Linq.From($scope.Contacts),
+               Linq.Skip(5),
+               Linq.From($scope.TypesContact),
+               Linq.Skip(3),
+               Linq.From($scope.Groups),
+               Linq.Skip(1),
+               Linq.From($scope.Tasks),
+               Linq.Skip(6)
+        ]).then(function (data) {
+            $scope.ResultSkip.push(data[1]);
+            $scope.ResultSkip.push(data[3]);
+            $scope.ResultSkip.push(data[5]);
+            $scope.ResultSkip.push(data[7]);
+            $scope.ResultSkip.push(data[9]);
+        });
+
+        var resultSkip1 =
+        [
+            { "ID": "2", "Login": "Taila", "Name": "Taila Rosa", "ID_Group": "2" },
+            { "ID": "3", "Login": "Vine", "Name": "Vinicius Machado", "ID_Group": "2" }
+        ]
+
+        var resultSkip2 =
+            [
+                { "ID": "6", "ID_User": "2", "ID_TypeContact": "P", "Description": "37522222" },
+                { "ID": "7", "ID_User": "3", "ID_TypeContact": "E", "Description": "Vine@nglinq.com" },
+            ];
+        var resultSkip3 = []
+        var resultSkip4 =
+            [
+                { "ID": "2", "Description": "ACS" }
+            ];
+        var resultSkip5 =
+            [
+                { "ID": "7", "Description": "BUG client 1", "ID_TypeTask": "B" },
+                { "ID": "8", "Description": "BUG client 1", "ID_TypeTask": "B" },
+                { "ID": "9", "Description": "Adjust client 3", "ID_TypeTask": "A" }
+            ];
+
+        QUnit.test('Skip', function () {
+            deepEqual($scope.ResultSkip[0], resultSkip1, "Skip(1) Users - return ID(2.3)");
+            deepEqual($scope.ResultSkip[1], resultSkip2, "Skip(5) Contacts - return ID(6,7)");
+            deepEqual($scope.ResultSkip[2], resultSkip3, "Skip(3) TypeContact - return null");
+            deepEqual($scope.ResultSkip[3], resultSkip4, "Skip(1) Groups - return ID(2)");
+            deepEqual($scope.ResultSkip[4], resultSkip5, "Skip(6) Tasks - return ID(1,2,3)");
+        });
+
+
+        module('Element Operators', init);
+
+        $scope.ResultFirst = [];
+
+        $q.all([
+               Linq.From($scope.Users),
+               Linq.First(),
+               Linq.From($scope.Contacts),
+               Linq.First(),
+               Linq.From($scope.TypesContact),
+               Linq.First(),
+               Linq.From($scope.Groups),
+               Linq.First(),
+               Linq.From($scope.Tasks),
+               Linq.First()
+        ]).then(function (data) {
+            $scope.ResultFirst.push(data[1]);
+            $scope.ResultFirst.push(data[3]);
+            $scope.ResultFirst.push(data[5]);
+            $scope.ResultFirst.push(data[7]);
+            $scope.ResultFirst.push(data[9]);
+        });
+
+        QUnit.test('First', function () {
+            deepEqual({ "ID": "1", "Login": "ADM", "Name": "Administrador", "ID_Group": "1" }, $scope.ResultFirst[0], "First Users - return ADM");
+            deepEqual({ "ID": "1", "ID_User": "1", "ID_TypeContact": "E", "Description": "Adm@nglinq.com" }, $scope.ResultFirst[1], "First Contacts - return Adm@nglinq.com");
+            deepEqual({ "ID": "E", "Description": "Email" }, $scope.ResultFirst[2], "First TypeContact - return Email");
+            deepEqual({ "ID": "1", "Description": "Adms" }, $scope.ResultFirst[3], "First Groups - return Adms");
+            deepEqual({ "ID": "1", "Description": "BUG client 1", "Time_Spent": 5, "ID_User": "2", "ID_TypeTask": "B", "ID_Status": "C" }, $scope.ResultFirst[4], "First Tasks - return BUG client 1");
+        });
+
+        $scope.ResultElementAt = [];
+
+        $q.all([
+               Linq.From($scope.Users),
+               Linq.ElementAt(2),
+               Linq.From($scope.Contacts),
+               Linq.ElementAt(1),
+               Linq.From($scope.TypesContact),
+               Linq.ElementAt(2),
+               Linq.From($scope.Groups),
+               Linq.ElementAt(1),
+               Linq.From($scope.Tasks),
+               Linq.ElementAt(6)
+        ]).then(function (data) {
+            $scope.ResultElementAt.push(data[1]);
+            $scope.ResultElementAt.push(data[3]);
+            $scope.ResultElementAt.push(data[5]);
+            $scope.ResultElementAt.push(data[7]);
+            $scope.ResultElementAt.push(data[9]);
+        });
+
+        QUnit.test('ElementAt', function () {
+            deepEqual($scope.ResultElementAt[0], { "ID": "3", "Login": "Vine", "Name": "Vinicius Machado", "ID_Group": "2" }, "ElementAt(2) Users - return Vine");
+            deepEqual($scope.ResultElementAt[1], { "ID": "2", "ID_User": "1", "ID_TypeContact": "C", "Description": "95214785" }, "ElementAt(1) Contacts - return 95214785");
+            deepEqual($scope.ResultElementAt[2], { "ID": "P", "Description": "Phone" }, "ElementAt(2) TypeContact - return Phone");
+            deepEqual($scope.ResultElementAt[3], { "ID": "2", "Description": "ACS" }, "ElementAt(1) Groups - return Adms");
+            deepEqual($scope.ResultElementAt[4], { "ID": "7", "Description": "BUG client 1", "ID_TypeTask": "B" }, "ElementAt(6) Tasks - return BUG client 1");
+        });
+
+        module('Aggregate Operators', init);
+        $scope.ResultCount = [];
+
+        $q.all([
+               Linq.From($scope.Users),
+               Linq.Count(),
+               Linq.From($scope.Contacts),
+               Linq.Count(),
+               Linq.From($scope.TypesContact),
+               Linq.Count(),
+               Linq.From($scope.Groups),
+               Linq.Count(),
+               Linq.From($scope.Tasks),
+               Linq.Count()
+        ]).then(function (data) {
+            $scope.ResultCount.push(data[1]);
+            $scope.ResultCount.push(data[3]);
+            $scope.ResultCount.push(data[5]);
+            $scope.ResultCount.push(data[7]);
+            $scope.ResultCount.push(data[9]);
+
+        });
+
+
+        QUnit.test('Count', function () {
+            equal($scope.ResultCount[0], 3, "Count Users - return 3");
+            equal($scope.ResultCount[1], 7, "Count Contacts - return 7");
+            equal($scope.ResultCount[2], 3, "Count TypesContact - return 3");
+            equal($scope.ResultCount[3], 2, "Count Groups - return 2");
+            equal($scope.ResultCount[4], 9, "Count Tasks - return 9");
+        });
+
+
+        $scope.ResultSum = [];
+
+        $q.all([
+            Linq.From($scope.Tasks), //0
+            Linq.Sum("Time_Spent"), //1
+            Linq.Where("(ID_Status == C)"), //2
+            Linq.Sum("Time_Spent"), //3
+            Linq.From($scope.Tasks), //4
+            Linq.Where("(ID_Status == P)"), //5
+            Linq.Sum("Time_Spent") //6
+        ]).then(function (data) {
+            $scope.ResultSum.push(data[1]);
+            $scope.ResultSum.push(data[3]);
+            $scope.ResultSum.push(data[6]);
+        });
+
+        QUnit.test('Sum', function () {
+            equal($scope.ResultSum[0], 69, "Sum total task return 69");
+            equal($scope.ResultSum[1], 45, "Sum task complete return 45");
+            equal($scope.ResultSum[2], 24, "Sum task progress return 24");
+        });
+
+        $scope.ResultMin = [];
+
+        $q.all([
+            Linq.From($scope.Tasks), //0
+            Linq.Min("Time_Spent"), //1
+            Linq.Where("(ID_Status == C)"), //2
+            Linq.Min("Time_Spent"), //3
+            Linq.From($scope.Tasks), //4
+            Linq.Where("(ID_Status == P)"), //5
+            Linq.Min("Time_Spent") //6
+        ]).then(function (data) {
+            $scope.ResultMin.push(data[1]);
+            $scope.ResultMin.push(data[3]);
+            $scope.ResultMin.push(data[6]);
+        });
+
+
+        QUnit.test('Min', function () {
+            equal($scope.ResultMin[0], 5, "Min task return 5");
+            equal($scope.ResultMin[1], 5, "Min complete return 5");
+            equal($scope.ResultMin[2], 12, "Min progress return 12");
+        });
+
+
+        $scope.ResultMax = [];
+
+        $q.all([
+            Linq.From($scope.Tasks), //0
+            Linq.Max("Time_Spent"), //1
+            Linq.Where("(ID_Status == C)"), //2
+            Linq.Max("Time_Spent"), //3
+            Linq.From($scope.Tasks), //4
+            Linq.Where("(ID_Status == P)"), //5
+            Linq.Max("Time_Spent") //6
+        ]).then(function (data) {
+            $scope.ResultMax.push(data[1]);
+            $scope.ResultMax.push(data[3]);
+            $scope.ResultMax.push(data[6]);
+        });
+
+        QUnit.test('Max', function () {
+            equal($scope.ResultMax[0], 25, "Max task return 25");
+            equal($scope.ResultMax[1], 25, "Max complete return 25");
+            equal($scope.ResultMax[2], 12, "Max progress return 12");
+        });
+
+        $scope.ResultAverange = [];
+
+        $q.all([
+            Linq.From($scope.Tasks), //0
+            Linq.Averange("Time_Spent"), //1
+            Linq.Where("(ID_Status == C)"), //2
+            Linq.Averange("Time_Spent"), //3
+            Linq.From($scope.Tasks), //4
+            Linq.Where("(ID_Status == P)"), //5
+            Linq.Averange("Time_Spent") //6
+        ]).then(function (data) {
+            $scope.ResultAverange.push(data[1]);
+            $scope.ResultAverange.push(data[3]);
+            $scope.ResultAverange.push(data[6]);
+        });
+
+        QUnit.test('Averange', function () {
+            equal($scope.ResultAverange[0], 8, "Averange task return 8");
+            equal($scope.ResultAverange[1], 11, "Averange complete return 11");
+            equal($scope.ResultAverange[2], 12, "Averange progress return 12");
+        });
+
+        module('Set Operators', init);
+
+        $scope.UsersDuplicate =
+        [
+            { "ID": "1", "Login": "ADM", "Name": "Administrador", "ID_Group": "1" },
+            { "ID": "2", "Login": "Taila", "Name": "Taila Rosa", "ID_Group": "2" },
+            { "ID": "2", "Login": "Taila", "Name": "Taila Rosa", "ID_Group": "2" },
+            { "ID": "3", "Login": "Vine", "Name": "Vinicius Machado", "ID_Group": "2" },
+            { "ID": "3", "Login": "Vine", "Name": "Vinicius Machado", "ID_Group": "2" }
+        ];
+
+        $scope.ContactsDuplicate =
+        [
+            { "ID": "1", "ID_User": "1", "ID_TypeContact": "E", "Description": "Adm@nglinq.com" },
+            { "ID": "2", "ID_User": "1", "ID_TypeContact": "C", "Description": "95214785" },
+            { "ID": "2", "ID_User": "1", "ID_TypeContact": "C", "Description": "95214785" },
+            { "ID": "3", "ID_User": "1", "ID_TypeContact": "P", "Description": "37528546" },
+            { "ID": "4", "ID_User": "2", "ID_TypeContact": "E", "Description": "Taila@nglinq.com" },
+            { "ID": "4", "ID_User": "2", "ID_TypeContact": "E", "Description": "Taila@nglinq.com" },
+            { "ID": "5", "ID_User": "2", "ID_TypeContact": "C", "Description": "95444445" },
+            { "ID": "6", "ID_User": "2", "ID_TypeContact": "P", "Description": "37522222" },
+            { "ID": "7", "ID_User": "3", "ID_TypeContact": "E", "Description": "Vine@nglinq.com" },
+        ];
+
+        $scope.TypesContactDuplicate =
+            [
+                { "ID": "E", "Description": "Email" },
+                { "ID": "C", "Description": "Cell Phone" },
+                { "ID": "P", "Description": "Phone" },
+                { "ID": "C", "Description": "Cell Phone" },
+            ];
+
+        $scope.GroupsDuplicate =
+            [
+                { "ID": "1", "Description": "Adms" },
+                { "ID": "2", "Description": "ACS" },
+                { "ID": "1", "Description": "Adms" }
+            ];
+
+        $scope.TasksDuplicate =
+            [
+                { "ID": "1", "Description": "BUG client 1", "Time_Spent": 5, "ID_User": "2", "ID_TypeTask": "B", "ID_Status": "C" },
+                { "ID": "2", "Description": "BUG client 2", "Time_Spent": 7, "ID_User": "3", "ID_TypeTask": "B", "ID_Status": "C" },
+                { "ID": "3", "Description": "BUG client 3", "Time_Spent": 12, "ID_User": "2", "ID_TypeTask": "B", "ID_Status": "P" },
+                { "ID": "4", "Description": "Adjust client 1", "Time_Spent": 8, "ID_User": "3", "ID_TypeTask": "A", "ID_Status": "C" },
+                { "ID": "5", "Description": "Adjust client 2", "Time_Spent": 25, "ID_User": "2", "ID_TypeTask": "A", "ID_Status": "C" },
+                { "ID": "6", "Description": "Adjust client 1", "Time_Spent": 12, "ID_User": "3", "ID_TypeTask": "A", "ID_Status": "P" },
+                { "ID": "7", "Description": "BUG client 1", "ID_TypeTask": "B" },
+                { "ID": "4", "Description": "Adjust client 1", "Time_Spent": 8, "ID_User": "3", "ID_TypeTask": "A", "ID_Status": "C" },
+                { "ID": "8", "Description": "BUG client 1", "ID_TypeTask": "B" },
+                { "ID": "9", "Description": "Adjust client 3", "ID_TypeTask": "A" },
+                { "ID": "7", "Description": "BUG client 1", "ID_TypeTask": "B" }
+            ];
+
+        $scope.ResultDistinct = [];
+
+        $q.all([
+               Linq.From($scope.UsersDuplicate),
+               Linq.Distinct(),
+               Linq.From($scope.ContactsDuplicate),
+               Linq.Distinct(),
+               Linq.From($scope.TypesContactDuplicate),
+               Linq.Distinct(),
+               Linq.From($scope.GroupsDuplicate),
+               Linq.Distinct(),
+               Linq.From($scope.TasksDuplicate),
+               Linq.Distinct()
+        ]).then(function (data) {
+            $scope.ResultDistinct.push(data[1]);
+            $scope.ResultDistinct.push(data[3]);
+            $scope.ResultDistinct.push(data[5]);
+            $scope.ResultDistinct.push(data[7]);
+            $scope.ResultDistinct.push(data[9]);
+        });
+
+        QUnit.test('Distinct', function () {
+            deepEqual($scope.ResultDistinct[0], $scope.Users, "Distinct Users");
+            deepEqual($scope.ResultDistinct[1], $scope.Contacts, "Distinct Contacts");
+            deepEqual($scope.ResultDistinct[2], $scope.TypesContact, "Distinct TypesContact");
+            deepEqual($scope.ResultDistinct[3], $scope.Groups, "Distinct Groups");
+            deepEqual($scope.ResultDistinct[4], $scope.Tasks, "Distinct Tasks ");
+        });
+
+
+        $scope.UsersUnion =
+            [
+                { "ID": "4", "Login": "TesteUnion", "Name": "Teste Union", "ID_Group": "2" }
+            ];
+
+        $scope.ContactsUnion =
+            [
+                { "ID": "8", "ID_User": "4", "ID_TypeContact": "E", "Description": "Teste@nglinq.com" }
+            ];
+
+        $scope.TypesContactUnion =
+            [
+                { "ID": "F", "Description": "FaceBook" }
+            ];
+
+        $scope.GroupsUnion =
+            [
+                { "ID": "3", "Description": "Desenv" }
+            ];
+
+        $scope.TasksUnion =
+            [
+                { "ID": "10", "Description": "Teste client 1", "Time_Spent": 5, "ID_User": "2", "ID_TypeTask": "B", "ID_Status": "C" }
+            ];
+
+        var resultUnion1 =
+            [
+               { "ID": "1", "Login": "ADM", "Name": "Administrador", "ID_Group": "1" },
+               { "ID": "2", "Login": "Taila", "Name": "Taila Rosa", "ID_Group": "2" },
+               { "ID": "3", "Login": "Vine", "Name": "Vinicius Machado", "ID_Group": "2" },
+               { "ID": "4", "Login": "TesteUnion", "Name": "Teste Union", "ID_Group": "2" }
+            ];
+
+        var resultUnion2 =
+            [
+                { "ID": "1", "ID_User": "1", "ID_TypeContact": "E", "Description": "Adm@nglinq.com" },
+                { "ID": "2", "ID_User": "1", "ID_TypeContact": "C", "Description": "95214785" },
+                { "ID": "3", "ID_User": "1", "ID_TypeContact": "P", "Description": "37528546" },
+                { "ID": "4", "ID_User": "2", "ID_TypeContact": "E", "Description": "Taila@nglinq.com" },
+                { "ID": "5", "ID_User": "2", "ID_TypeContact": "C", "Description": "95444445" },
+                { "ID": "6", "ID_User": "2", "ID_TypeContact": "P", "Description": "37522222" },
+                { "ID": "7", "ID_User": "3", "ID_TypeContact": "E", "Description": "Vine@nglinq.com" },
+                { "ID": "8", "ID_User": "4", "ID_TypeContact": "E", "Description": "Teste@nglinq.com" }
+            ];
+
+        var resultUnion3 =
+            [
+                { "ID": "E", "Description": "Email" },
+                { "ID": "C", "Description": "Cell Phone" },
+                { "ID": "P", "Description": "Phone" },
+                { "ID": "F", "Description": "FaceBook" }
+            ];
+
+        var resultUnion4 =
+            [
+                { "ID": "1", "Description": "Adms" },
+                { "ID": "2", "Description": "ACS" },
+                { "ID": "3", "Description": "Desenv" }
+            ];
+        var resultUnion5 =
+            [
+                { "ID": "1", "Description": "BUG client 1", "Time_Spent": 5, "ID_User": "2", "ID_TypeTask": "B", "ID_Status": "C" },
+                { "ID": "2", "Description": "BUG client 2", "Time_Spent": 7, "ID_User": "3", "ID_TypeTask": "B", "ID_Status": "C" },
+                { "ID": "3", "Description": "BUG client 3", "Time_Spent": 12, "ID_User": "2", "ID_TypeTask": "B", "ID_Status": "P" },
+                { "ID": "4", "Description": "Adjust client 1", "Time_Spent": 8, "ID_User": "3", "ID_TypeTask": "A", "ID_Status": "C" },
+                { "ID": "5", "Description": "Adjust client 2", "Time_Spent": 25, "ID_User": "2", "ID_TypeTask": "A", "ID_Status": "C" },
+                { "ID": "6", "Description": "Adjust client 1", "Time_Spent": 12, "ID_User": "3", "ID_TypeTask": "A", "ID_Status": "P" },
+                { "ID": "7", "Description": "BUG client 1", "ID_TypeTask": "B" },
+                { "ID": "8", "Description": "BUG client 1", "ID_TypeTask": "B" },
+                { "ID": "9", "Description": "Adjust client 3", "ID_TypeTask": "A" },
+                { "ID": "10", "Description": "Teste client 1", "Time_Spent": 5, "ID_User": "2", "ID_TypeTask": "B", "ID_Status": "C" }
+            ];
+
+        $scope.ResultUnion = [];
+
+        $q.all([
+               Linq.From($scope.Users),
+               Linq.Union($scope.UsersUnion),
+               Linq.From($scope.Contacts),
+               Linq.Union($scope.ContactsUnion),
+               Linq.From($scope.TypesContact),
+               Linq.Union($scope.TypesContactUnion),
+               Linq.From($scope.Groups),
+               Linq.Union($scope.GroupsUnion),
+               Linq.From($scope.Tasks),
+               Linq.Union($scope.TasksUnion)
+        ]).then(function (data) {
+            $scope.ResultUnion.push(data[1]);
+            $scope.ResultUnion.push(data[3]);
+            $scope.ResultUnion.push(data[5]);
+            $scope.ResultUnion.push(data[7]);
+            $scope.ResultUnion.push(data[9]);
+        });
+
+        QUnit.test('Union', function () {
+            deepEqual($scope.ResultUnion[0], resultUnion1, "Union Users");
+            deepEqual($scope.ResultUnion[1], resultUnion2, "Union Contacts");
+            deepEqual($scope.ResultUnion[2], resultUnion3, "Union TypesContact");
+            deepEqual($scope.ResultUnion[3], resultUnion4, "Union Groups");
+            deepEqual($scope.ResultUnion[4], resultUnion5, "Union Tasks ");
+        });
+
+    })
+</script>
