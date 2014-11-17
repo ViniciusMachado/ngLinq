@@ -1,1 +1,1 @@
-Visit www.nglink.com for more information
+Visit www.nglinq.com for more information
